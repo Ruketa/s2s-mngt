@@ -24,11 +24,16 @@ export const getServerSideProps: GetServerSideProps<Props>  = async() => {
 }
 
 export default function Session(props: Props) {
+
+  const handleClick = () => {
+    console.log("clicked")
+  }
+
   return (
     <section>
       <h1 className="text-3xl">Session</h1>
-      <div className="grid grid-cols-2 gap-2 m-2">
-        <div className="m-2 bg-blue-300">発表タイトル</div>
+      <div className="grid grid-cols-6 m-2">
+        <div className="m-2 bg-blue-300 col-start-1 row-start-1">発表タイトル</div>
         <div>
           <select className="m-2">
             {
@@ -38,16 +43,19 @@ export default function Session(props: Props) {
             }
           </select>
         </div>
-        <div className="m-2 bg-blue-300">開催日</div>
-        <div className="m-2">
+        <div className="m-2 bg-blue-300 col-start-1 row-start-2">開催日</div>
+        <div className="m-2 col-start-2 row-start-2">
           <input type="date" placeholder="開催日"/>
         </div>
-        <div className="m-2 bg-blue-300">開催回</div>
-        <div className="m-2">
+       <div className="m-2 bg-blue-300 col-start-1 row-start-3">開催回</div>
+       <div className="m-2 col-start-2 row-start-3">
           <input type="number" placeholder="開催回番号"/>
-        </div>
+       </div>
       </div>
-      <button className="row-span-2">Register</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 row-span-2 border border-blue-700 rounded"
+        onClick={handleClick}>
+        Register
+      </button>
     </section>
   )
 }
