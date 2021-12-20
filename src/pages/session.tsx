@@ -1,5 +1,6 @@
 import Layout from "../components/layout"
 import Sidebar from "../components/sidebar"
+import { useState } from "react"
 import type { GetServerSideProps} from 'next'
 import prisma from "../lib/prisma"
 
@@ -25,8 +26,34 @@ export const getServerSideProps: GetServerSideProps<Props>  = async() => {
 
 export default function Session(props: Props) {
 
-  const handleClick = () => {
-    console.log("clicked")
+  const [planId, setPlanId] = useState("")
+  const [sessionNo, setSessionNo] = useState(0)
+  const [eventAt, setEventAt] = useState(new Date())
+
+  const handleChangePlanId = (e: any) => {
+    setPlanId(e.target.value)
+  }
+
+  const handleChangeEventAt = (e: any) => {
+    const date = new Date(e.target.value)
+    setEventAt(date)
+  }
+
+  const handleChangeSessionNo = (e: any) => {
+    const sessionNo = Number(e.target.value)
+    setSessionNo(sessionNo)
+  }
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault()
+    console.log(planId, sessionNo, eventAt)
+    await prisma.study_sessions.create({
+      data:{
+        holding_num: sessionNo,
+        plan_id: planId,
+        event_at: eventAt 
+      }
+    })
   }
 
   return (
@@ -35,7 +62,7 @@ export default function Session(props: Props) {
       <div className="grid grid-cols-6 m-2">
         <div className="m-2 bg-blue-300 col-start-1 row-start-1">発表タイトル</div>
         <div>
-          <select className="m-2">
+          <select className="m-2" onChange={handleChangePlanId}>
             {
               props.plans.map(plan => {
                 return <option key={plan.id} value={plan.id}>{plan.presentation_title}</option>
@@ -44,16 +71,16 @@ export default function Session(props: Props) {
           </select>
         </div>
         <div className="m-2 bg-blue-300 col-start-1 row-start-2">開催日</div>
-        <div className="m-2 col-start-2 row-start-2">
+        <div className="m-R col-start-2 row-start-2" onChange={handleChangeEventAt} >
           <input type="date" placeholder="開催日"/>
         </div>
-       <div className="m-2 bg-blue-300 col-start-1 row-start-3">開催回</div>
-       <div className="m-2 col-start-2 row-start-3">
-          <input type="number" placeholder="開催回番号"/>
-       </div>
+        <div className="m-2 bg-blue-300 col-start-1 row-start-3">開催回</div>
+        <div className="m-2 col-start-2 row-start-3" onChange={handleChangeSessionNo}>
+           <input type="number" placeholder="開催回番号"/>
+        </div>
       </div>
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 row-span-2 border border-blue-700 rounded"
-        onClick={handleClick}>
+        onClick={handleSubmit}>
         Register
       </button>
     </section>
