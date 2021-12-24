@@ -29,11 +29,9 @@ model questionnaires {
 }
 
 model study_sessions {
-  id           String    @id
-  holding_num  BigInt?
-  presenter_id String?
-  category     BigInt?
-  plan_id      String?
-  created_at   DateTime? @db.Timestamptz(6)
-  evented_on   DateTime? @db.Timestamptz(6)
+  id          String    @id
+  holding_num BigInt?
+  plan_id     String?
+  created_at  DateTime? @db.Timestamptz(6)
+  evented_on  DateTime? @db.Timestamptz(6)
 }
