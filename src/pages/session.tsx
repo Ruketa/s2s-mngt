@@ -45,15 +45,28 @@ export default function Session(props: Props) {
   }
 
   const handleSubmit = async (e: any) => {
-    e.preventDefault()
-    console.log(planId, sessionNo, eventAt)
-    await prisma.study_sessions.create({
-      data:{
-        holding_num: sessionNo,
-        plan_id: planId,
-        event_at: eventAt 
+    const res = await fetch("/api/createSession", {
+      method: "POST",
+      body: JSON.stringify({holding_num: sessionNo, plan_id: planId, event_at: eventAt}),
+      headers: {
+        "Content-Type": "application/json"
       }
-    })
+    });
+
+    const data = await res.json();
+
+    console.log(data);
+    
+    //e.preventDefault()
+    //await prisma.study_sessions.create({
+    //  data:{
+    //    id: "",
+    //    holding_num: sessionNo,
+    //    plan_id: planId,
+    //    created_at: new Date(),
+    //    evented_on: eventAt 
+    //  }
+    //})
   }
 
   return (
