@@ -52,21 +52,6 @@ export default function Session(props: Props) {
         "Content-Type": "application/json"
       }
     });
-
-    const data = await res.json();
-
-    console.log(data);
-    
-    //e.preventDefault()
-    //await prisma.study_sessions.create({
-    //  data:{
-    //    id: "",
-    //    holding_num: sessionNo,
-    //    plan_id: planId,
-    //    created_at: new Date(),
-    //    evented_on: eventAt 
-    //  }
-    //})
   }
 
   return (
