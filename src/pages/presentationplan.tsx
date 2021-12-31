@@ -18,12 +18,20 @@ export default function PresentationPlan(){
   const onDrop = useCallback((acceptedFiles: FileList): void => {
     const reader = new FileReader()
     reader.readAsText(acceptedFiles[0])
-    reader.onload = () => {
+    reader.onload = async () => {
       if(!reader.result) return
+
       const loadResult = reader.result as string
-      const rows = loadResult.split("\n")
-      const csvData = rows.map((row: string) => {
-        const cols = row.split(",")
+      const result = await fetch("/api/loadcsv", {
+        method: "POST",
+        body: JSON.stringify({csvString: loadResult}),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+
+      const json = await result.json()
+      const csvData = json.response.map((cols: string) => {
         return {
           id: cols[0],
           presenter: cols[4],
@@ -32,6 +40,7 @@ export default function PresentationPlan(){
           scheduled: cols[8],
         }
       })
+
       setDataGridRows(csvData.slice(1))
     }
   }, [])
