@@ -4,7 +4,7 @@ import styles from "./sidebar.module.css"
 export default function Sidebar() {
   return (
     <nav className={styles.nav}>
-      <Link href="/">
+      <Link href="/questionnaire">
         <a>Questionnaire</a>
       </Link>
       <Link href="/presentationplan">

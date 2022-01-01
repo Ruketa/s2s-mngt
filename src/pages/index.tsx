@@ -1,26 +1,12 @@
+// components
 import Layout from "../components/layout"
 import Sidebar from "../components/sidebar"
-import type { GetServerSideProps} from 'next'
-import prisma from "../lib/prisma"
 
-type Props = {
-  count: number;
-};
+export default function Index() {
 
-export const getServerSideProps: GetServerSideProps<Props> = async(ctx) => {
-  const count = await prisma.presentation_plans.count();
-  return {
-    props: {
-      count
-    }
-  }
-}
-
-export default function Index(props: Props) {
   return (
     <section>
-      <h1>Questionnaier</h1>
-      <div>questionnaier count: {props.count}</div>
+      <h1 className="text-6xl font-bold">Welcome S2S Management tool</h1>
     </section>
   )
 }
