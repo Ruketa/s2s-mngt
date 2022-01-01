@@ -4,19 +4,30 @@ import Sidebar from "../components/sidebar"
 // next 
 import type { GetServerSideProps} from 'next'
 // hooks
-import { useState, useRef, useCallback } from "react"
+import { FC } from "react"
+import { useQuestionnaire } from "./hooks/useQuestionnaire"
 // third party library
 import { DataGrid } from "@mui/x-data-grid"
 import { Button, TextField } from "@mui/material"
-import { useDropzone } from "react-dropzone"
 import prisma from "../lib/prisma"
 
 type Props = {
-  columns: Array<any>,
   latestHoldingNumeber: number,
 };
-
 export const getServerSideProps: GetServerSideProps<Props> = async(ctx) => {
+  const qs = await prisma.questionnaires.findMany()
+  const latestHoldingNumber = qs.slice(-1)[0].holding_num 
+  return {
+    props: {
+      latestHoldingNumeber: Number(latestHoldingNumber)
+    }
+  }
+}
+
+export default function QuestionnaireContainer(props: Props) {
+
+  const questionnaireProp = useQuestionnaire()
+
   const columns = [
     {field: "id", headerName: "ID"},
     {field: "satisfaction", headerName: "満足度"},
@@ -27,92 +38,48 @@ export const getServerSideProps: GetServerSideProps<Props> = async(ctx) => {
     {field: "comment", headerName: "自由回答コメント", minWidth: 400},
   ]
 
-  const qs = await prisma.questionnaires.findMany()
-  const latestHoldingNumber = qs.slice(-1)[0].holding_num 
-
-  return {
-    props: {
-      columns: columns,
-      latestHoldingNumeber: Number(latestHoldingNumber)
-    }
+  const params = {
+    columns: columns,
+    latestHoldingNumeber: props.latestHoldingNumeber,
+    dataGridRows: questionnaireProp.dataGridRows,
+    selectedRows: questionnaireProp.selectedRows,
+    acceptedFiles: questionnaireProp.acceptedFiles,
+    submitQuestionnaire: questionnaireProp.submitQuestionnaire,
+    setHoldingNumber: questionnaireProp.setHoldingNumber,
+    getRootProps: questionnaireProp.getRootProps,
+    getInputProps: questionnaireProp.getInputProps,
   }
+
+  return (
+    <section>
+      <Questionnaier {...params} />
+    </section>
+  )
 }
 
-export default function Index(props: Props) {
+interface QuestionnaireProps {
+  columns: Array<any>,
+  latestHoldingNumeber: number,
+  dataGridRows: Array<any>,
+  selectedRows: any,
+  acceptedFiles: Array<any>,
+  setHoldingNumber: (holdingNumber: number) => void,
+  getRootProps: any,
+  getInputProps: any,
+  submitQuestionnaire: () => void,
+}
 
-  const onDrop = useCallback((acceptedFiles: FileList): void => {
-    const reader = new FileReader()
-    reader.readAsText(acceptedFiles[0])
-    reader.onload = async () => {
-      if(!reader.result) return
-      const loadResult = reader.result as string
-      const result = await fetch("/api/loadcsv", {
-        method: "POST",
-        body: JSON.stringify({csvString: loadResult}),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-
-      const json = await result.json()
-      const csvData = json.response.map((cols: Array<any>) => {
-        return {
-          id: cols[0],
-          satisfaction: cols[5],
-          recommendation: cols[6],
-          topic: cols[7],
-          participation: cols[8],
-          presentation: cols[9],
-          comment: cols[10] as string,
-        }
-      })
-
-      setDataGridRows(csvData.slice(1))
-    }
-  }, [])
-
-  const [dataGridRows, setDataGridRows] = useState(new Array<any>())
-  const [holdingNumber, setHoldingNumber] = useState(0)
-  const selectedRows = useRef(new Array<any>())
-  const {acceptedFiles, getRootProps, getInputProps} = useDropzone({onDrop})
-  const files = acceptedFiles.map((file: any) => (
-    <li key={file.path}>{file.path} - {file.size} bytes</li>
-  ))
-
-  const handleSubmit = async () => {
-    if( selectedRows.current.length === 0 ) return
-
-    const questionnaire = dataGridRows.filter((row: any) => {
-      return selectedRows.current.includes(row.id)
-    })
-
-    try{
-      await fetch("/api/registerQuestionnaire", {
-        method: "POST",
-        body: JSON.stringify({
-          questionnaire,
-          holdingNumber
-        }),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-
-      alert("登録しました")
-    }
-    catch(e){
-      alert("登録に失敗しました")
-    }
-
-  }
-
-  const onSelectionChange = (rows: any) => {
-    selectedRows.current = rows
-  }
-
-  const onValueChange = (e: any) => {
-    setHoldingNumber(e.target.value)
-  }
+const Questionnaier: FC<QuestionnaireProps> = ({
+  columns,
+  latestHoldingNumeber,
+  dataGridRows,
+  selectedRows,
+  acceptedFiles,
+  submitQuestionnaire,
+  setHoldingNumber,
+  getRootProps,
+  getInputProps,
+}) => {
 
   return (
     <section>
@@ -123,24 +90,31 @@ export default function Index(props: Props) {
           <p>Drag 'n' drop some files here, or click to select files</p>
         </div>
         <h1 className="font-bold text-xl">File</h1>
-        <ul>{files}</ul>
+        <ul>
+          {
+          acceptedFiles.map((file:any) => (
+            <li key={file.path}>{file.path} - {file.size} bytes</li>
+          ))
+          }
+        </ul>
       </div>
       <div style={{height: 400, width: "80vw"}}>
         <DataGrid
           rows={dataGridRows}
-          columns={props.columns}
+          columns={columns}
           checkboxSelection
-          onSelectionModelChange={onSelectionChange}
+          onSelectionModelChange={(rows: any) => {selectedRows.current = rows}}
         />
       </div>
-      <TextField id="latestHoldingNumber" label="Latest Holding Number" defaultValue={String(props.latestHoldingNumeber)} 
+      <TextField id="latestHoldingNumber" label="Latest Holding Number" defaultValue={String(latestHoldingNumeber)} 
         InputProps={{
           readOnly: true,
         }}
         className="mt-2"
       />
-      <TextField id="holding_number" label="holding_number" type="number" className="m-2" onChange={onValueChange}></TextField>
-      <Button variant="contained" className="bg-blue-500 hover:bg-blue-600 text-gray-100 font-bold m-2" onClick={handleSubmit}>Register</Button>
+      <TextField id="holding_number" label="holding_number" type="number" className="m-2" 
+        onChange={(e: any) => setHoldingNumber(e.target.value)}></TextField>
+      <Button variant="contained" className="bg-blue-500 hover:bg-blue-600 text-gray-100 font-bold m-2" onClick={submitQuestionnaire}>Register</Button>
     </section>
   )
 }
@@ -154,4 +128,4 @@ const getLayout = (page: any) => {
   )
 }
 
-Index.getLayout = getLayout
+QuestionnaireContainer.getLayout = getLayout

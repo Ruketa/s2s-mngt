@@ -1,81 +1,35 @@
-import { Button } from "@mui/material"
 import Layout from "../components/layout"
 import Sidebar from "../components/sidebar"
 import { DataGrid } from '@mui/x-data-grid'
-import { useState, useRef, useCallback } from "react"
-import { useDropzone } from "react-dropzone"
+import { Button } from "@mui/material"
+import { FC } from "react"
+import { usePresentationPlan } from "./hooks/usePresentationPlan"
 
-export default function PresentationPlan(){
+export default function PresentationPlanContainer(){
+  return (
+    <PresentationPlan {...usePresentationPlan()} />
+  )
+}
 
-  const columns = [
-    {field: "id", headerName: "ID"},
-    {field: "presenter", headerName: "発表者"},
-    {field: "division", headerName: "所属", minWidth: 200}, 
-    {field: "presentation", headerName: "発表内容", minWidth: 400},
-    {field: "scheduled", headerName: "予定開催日"},
-  ]
+interface PresentationPlanProps {
+  columns: Array<any>,
+  dataGridRows: Array<any>,
+  selectedRows: any,
+  acceptedFiles: Array<any>,
+  getRootProps: any,
+  getInputProps: any,
+  submitPresentationPlan: () => void,
+}
 
-  const onDrop = useCallback((acceptedFiles: FileList): void => {
-    const reader = new FileReader()
-    reader.readAsText(acceptedFiles[0])
-    reader.onload = async () => {
-      if(!reader.result) return
-
-      const loadResult = reader.result as string
-      const result = await fetch("/api/loadcsv", {
-        method: "POST",
-        body: JSON.stringify({csvString: loadResult}),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-
-      const json = await result.json()
-      const csvData = json.response.map((cols: string) => {
-        return {
-          id: cols[0],
-          presenter: cols[4],
-          division: cols[6],
-          presentation: cols[7],
-          scheduled: cols[8],
-        }
-      })
-
-      setDataGridRows(csvData.slice(1))
-    }
-  }, [])
-
-  const [dataGridRows, setDataGridRows] = useState(new Array<any>())
-  const selectedRows = useRef(new Array<any>())
-  const {acceptedFiles, getRootProps, getInputProps} = useDropzone({ onDrop })
-  const files = acceptedFiles.map((file: any) => (
-    <li key={file.path}>{file.path} - {file.size} bytes</li>
-  ))
-
-  const handleSubmit = async () => {
-    if(selectedRows.current.length === 0) return
-
-    const postData = dataGridRows.filter((row: any) => {
-      return selectedRows.current.includes(row.id)
-    })
-
-    const res = await fetch("/api/registerPlan", {
-      method: "POST",
-      body: JSON.stringify(postData),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-
-    const json = await res.json()
-
-    if(json.ok === true){
-      alert("登録しました")
-    }
-    else{
-      alert("登録に失敗しました")
-    }
-  }
+const PresentationPlan: FC<PresentationPlanProps> = ({
+  columns,
+  dataGridRows,
+  selectedRows,
+  acceptedFiles,
+  getRootProps,
+  getInputProps,
+  submitPresentationPlan,
+}) => {
 
   const onSelectionChange = (rows: any) => {
     selectedRows.current = rows 
@@ -90,7 +44,13 @@ export default function PresentationPlan(){
           <p>Drag 'n' drop some files here, or click to select files</p>
         </div>
         <h1 className="font-bold text-xl">File</h1>
-        <ul>{files}</ul>
+        <ul>
+          {
+            acceptedFiles.map((file:any) => (
+              <li key={file.path}>{file.path} - {file.size} bytes</li>
+            ))
+          }
+          </ul>
       </div>
       <div style={{height: 400, width: "80vw"}}>
         <DataGrid
@@ -100,7 +60,11 @@ export default function PresentationPlan(){
           onSelectionModelChange={onSelectionChange}
         />
       </div>
-      <Button variant="contained" className="bg-blue-500 hover:bg-blue-600 text-gray-100 font-bold m-2" onClick={handleSubmit}>Register</Button>
+      <Button variant="contained" 
+        className="bg-blue-500 hover:bg-blue-600 text-gray-100 font-bold m-2" 
+        onClick={submitPresentationPlan}>
+          Register
+      </Button>
     </section>
   )
 }
@@ -114,4 +78,4 @@ const getLayout = (page: any) => {
   )
 }
 
-PresentationPlan.getLayout = getLayout
+PresentationPlanContainer.getLayout = getLayout

@@ -29,7 +29,6 @@ export default async function registerPlan(
 
   try {
     for(const plan of plans){
-      console.log(plan)
       validation(res, plan)
 
       const id = uuid.v4()
@@ -45,13 +44,11 @@ export default async function registerPlan(
           created_at: new Date()
         }
       })
-      console.log(result)
     }
 
     res.status(200).json({ok:true})
   }
   catch(e){
-    console.log(e)
     res.status(500)
     res.json({
       ok: false,
