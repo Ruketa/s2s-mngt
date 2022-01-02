@@ -1,10 +1,12 @@
+// components
 import Layout from "../components/layout"
 import Sidebar from "../components/sidebar"
 
 export default function Index() {
+
   return (
     <section>
-      <h1>Questionnaier</h1>
+      <h1 className="text-6xl font-bold">Welcome S2S Management tool</h1>
     </section>
   )
 }
