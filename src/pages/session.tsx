@@ -52,6 +52,16 @@ export default function Session(props: Props) {
         "Content-Type": "application/json"
       }
     });
+
+    const json = await res.json();
+
+    if(json.ok === true){
+      alert("登録しました")
+    }
+    else{
+      alert("登録に失敗しました")
+    }
+ 
   }
 
   return (

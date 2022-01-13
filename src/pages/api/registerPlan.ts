@@ -32,15 +32,15 @@ export default async function registerPlan(
       validation(res, plan)
 
       const id = uuid.v4()
-      const scheduled_on = new Date(plan.scheduled)
-
+      const scheduled_at = new Date(plan.scheduled)
+      scheduled_at.setTime(scheduled_at.getTime() + 1000*60*60*9) // JST
       const result = await prisma.presentation_plans.create({
         data: {
           id: id,
           presenter: plan.presenter,
           presentation_title: plan.presentation,
           division: plan.division,
-          scheduled_on: scheduled_on,
+          scheduled_on: scheduled_at,
           created_at: new Date()
         }
       })
