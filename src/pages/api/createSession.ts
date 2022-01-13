@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from "../../lib/prisma"
 import * as uuid from "uuid"
 
-export default async function handler(
+export default async function createSession(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
